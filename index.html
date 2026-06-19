@@ -501,8 +501,30 @@ function load(){
   document.getElementById('cfg-sleep-pts').value=S.sleepPts;
 }
 function save(){localStorage.setItem('trener3',JSON.stringify(S));syncSheets();}
-async function syncSheets(){if(!S.sheetsUrl)return;try{await fetch(S.sheetsUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'save',data:S})});}catch(e){}}
-async function loadSheets(){if(!S.sheetsUrl)return;try{const r=await fetch(S.sheetsUrl+'?action=load');const d=await r.json();if(d&&d.weekPlan){Object.assign(S,d);renderWeek();}}catch(e){}}
+async function syncSheets(){
+  if(!S.sheetsUrl)return;
+  try{await fetch(S.sheetsUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'save',data:S})});}catch(e){}
+}
+function loadSheets(){
+  if(!S.sheetsUrl)return;
+  // Use script tag injection to bypass CORS (JSONP-style)
+  const existing=document.getElementById('_sheets_loader');
+  if(existing)existing.remove();
+  window._onSheetsLoad=function(d){
+    if(d&&d.weekPlan){Object.assign(S,d);save();renderWeek();showToast('Dane załadowane z chmury');}
+  };
+  const s=document.createElement('script');
+  s.id='_sheets_loader';
+  s.src=S.sheetsUrl+'?callback=_onSheetsLoad';
+  s.onerror=()=>{
+    // Fallback: plain fetch with no-cors won't give us data, try with cors
+    fetch(S.sheetsUrl+'?action=load',{mode:'cors'})
+      .then(r=>r.json())
+      .then(d=>{if(d&&d.weekPlan){Object.assign(S,d);save();renderWeek();showToast('Dane załadowane z chmury');}})
+      .catch(()=>{});
+  };
+  document.head.appendChild(s);
+}
 
 // ── Algorithm — weekly plan analysis only ──
 function analyzeWeekPlan(planData){
@@ -988,8 +1010,21 @@ function saveParams(){
 }
 function saveConfig(){S.sheetsUrl=document.getElementById('sheets-url').value.trim();save();showToast('URL zapisany — synchronizuję...');loadSheets();}
 function copyScript(){
-  const sc=`function doPost(e){var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('State')||SpreadsheetApp.getActiveSpreadsheet().insertSheet('State');var d=JSON.parse(e.postData.contents);if(d.action==='save'){sh.clearContents();sh.getRange(1,1).setValue(JSON.stringify(d.data));}return ContentService.createTextOutput('ok');}
-function doGet(e){var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('State');if(!sh)return ContentService.createTextOutput('{}').setMimeType(ContentService.MimeType.JSON);return ContentService.createTextOutput(sh.getRange(1,1).getValue()||'{}').setMimeType(ContentService.MimeType.JSON);}`;
+  const sc=`function doPost(e){
+  var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('State')||SpreadsheetApp.getActiveSpreadsheet().insertSheet('State');
+  var d=JSON.parse(e.postData.contents);
+  if(d.action==='save'){sh.clearContents();sh.getRange(1,1).setValue(JSON.stringify(d.data));}
+  return ContentService.createTextOutput('ok');
+}
+function doGet(e){
+  var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('State');
+  var val=sh?sh.getRange(1,1).getValue():'{}';
+  var callback=e&&e.parameter&&e.parameter.callback;
+  if(callback){
+    return ContentService.createTextOutput(callback+'('+val+')').setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+  return ContentService.createTextOutput(val||'{}').setMimeType(ContentService.MimeType.JSON);
+}`;
   navigator.clipboard.writeText(sc).then(()=>showToast('Skrypt skopiowany'));
 }
 
