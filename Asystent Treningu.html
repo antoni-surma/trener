@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trener — Plan Gallowaya</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230a0c10'/><text x='50%25' y='50%25' font-size='18' font-family='system-ui,sans-serif' font-weight='900' fill='%23eeff00' text-anchor='middle' dominant-baseline='central'>T</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%230a0c10'/><text x='50%25' y='50%25' font-size='110' font-family='system-ui,sans-serif' font-weight='900' fill='%23eeff00' text-anchor='middle' dominant-baseline='central'>T</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0c10;--surface:#131921;--surface2:#1a2130;--surface3:#222d3d;
+  --border:rgba(255,255,255,0.07);--border-med:rgba(255,255,255,0.12);
+  --lime:#eeff00;--lime-dim:rgba(238,255,0,0.1);
+  --purple:#6b55ff;--purple-dim:rgba(107,85,255,0.18);
+  --text:#ffffff;--text-sec:rgba(255,255,255,0.55);--text-faint:rgba(255,255,255,0.22);
+  --green:#00e676;--green-dim:rgba(0,230,118,0.1);
+  --amber:#ffab00;--amber-dim:rgba(255,171,0,0.1);
+  --red:#ff4444;--red-dim:rgba(255,68,68,0.1);
+  --r:14px;--rs:8px;--rx:5px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
+header{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.5rem;border-bottom:.5px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:100}
+.logo{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--lime)}
+.logo span{color:var(--text-faint);font-weight:400}
+nav{display:flex;gap:3px}
+.nav-btn{background:none;border:none;color:var(--text-sec);font-size:12px;font-family:inherit;padding:6px 11px;border-radius:var(--rx);cursor:pointer;transition:all .15s}
+.nav-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-btn.active{color:var(--lime);background:var(--lime-dim)}
+.main{padding:1.5rem;max-width:1020px;margin:0 auto;width:100%}
+.view{display:none}.view.active{display:block}
+
+/* ── Dashboard gauge ── */
+.dashboard{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);padding:1.1rem 1.25rem;margin-bottom:1.1rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
+.dash-main{display:flex;flex-direction:column;gap:2px;min-width:90px}
+.dash-pts{font-size:36px;font-weight:900;line-height:1;letter-spacing:-.02em}
+.dash-label{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text-faint)}
+.gauge-wrap{flex:1;min-width:200px}
+.gauge-track{position:relative;height:8px;background:var(--surface3);border-radius:4px;overflow:visible;margin-bottom:6px}
+.gauge-fill{height:100%;border-radius:4px;transition:width .5s,background .4s;position:relative}
+.gauge-fill::after{content:'';position:absolute;right:-1px;top:-3px;width:3px;height:14px;background:inherit;border-radius:2px;opacity:.8}
+.gauge-zones{display:flex;height:3px;border-radius:2px;overflow:hidden;margin-bottom:4px;gap:2px}
+.gz{height:100%;border-radius:1px}
+.gauge-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--text-faint);font-weight:600}
+.gauge-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.gl-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-sec)}
+.gl-dot{width:7px;height:7px;border-radius:50%}
+.dash-meta{display:flex;gap:8px;flex-wrap:wrap}
+.dash-card{background:var(--surface2);border-radius:var(--rs);padding:7px 11px;display:flex;flex-direction:column;gap:1px;min-width:80px}
+.dash-card-val{font-size:16px;font-weight:700}
+.dash-card-lbl{font-size:9px;color:var(--text-faint);font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+
+/* ── Week grid ── */
+.week-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;flex-wrap:wrap;gap:.5rem}
+.week-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint)}
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:1.1rem}
+.day-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);padding:11px 9px;min-height:195px;display:flex;flex-direction:column;gap:5px;position:relative;transition:border-color .15s,background .15s;cursor:pointer}
+.day-card:hover{background:var(--surface2);border-color:var(--border-med)}
+.day-card.today{border-color:var(--lime)}
+.day-card.rest-day{opacity:.38}
+.day-card.rest-day:hover{opacity:.7}
+.day-lbl{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-faint)}
+.day-num{font-size:22px;font-weight:900;line-height:1;color:var(--text)}
+.day-card.today .day-num{color:var(--lime)}
+.edit-hint{font-size:9px;color:var(--text-faint);margin-top:auto;text-align:center;opacity:0;transition:opacity .15s}
+.day-card:hover .edit-hint{opacity:1}
+.slot{display:flex;flex-direction:column;gap:3px;margin-top:2px}
+.slot-time{font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text-faint)}
+.wbadge{display:inline-flex;align-items:center;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:3px;width:fit-content}
+.b-run{background:var(--purple-dim);color:var(--purple)}
+.b-interval{background:var(--lime-dim);color:var(--lime)}
+.b-hills{background:var(--amber-dim);color:var(--amber)}
+.b-strength{background:var(--green-dim);color:var(--green)}
+.b-rest{background:var(--surface2);color:var(--text-faint)}
+.slot-detail{font-size:10px;color:var(--text-sec);line-height:1.35}
+.slot-adjusted{font-size:10px;color:var(--amber);line-height:1.35}
+.slot-divider{height:.5px;background:var(--border);margin:2px 0}
+.checkin-btn{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;background:none;border:.5px solid var(--border-med);color:var(--text-sec);font-size:9px;font-weight:700;font-family:inherit;letter-spacing:.04em;text-transform:uppercase;padding:6px;border-radius:var(--rx);cursor:pointer;transition:all .15s;margin-top:auto}
+.checkin-btn:hover{border-color:var(--lime);color:var(--lime)}
+.checkin-btn.done{border-color:var(--green);color:var(--green);background:var(--green-dim)}
+.checkin-btn.warned{border-color:var(--amber);color:var(--amber);background:var(--amber-dim)}
+.sdot{width:6px;height:6px;border-radius:50%;position:absolute;top:9px;right:9px}
+.dok{background:var(--green)}.dwarn{background:var(--amber)}
+.day-pts-badge{position:absolute;top:9px;right:9px;font-size:9px;font-weight:700;padding:2px 5px;border-radius:3px}
+
+/* ── Alert panel ── */
+.alert-panel{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);padding:.9rem 1.1rem;margin-bottom:1.1rem}
+.alert-panel.aok{border-color:var(--green)}.alert-panel.awarn{border-color:var(--amber)}.alert-panel.aalert{border-color:var(--red)}
+.alert-head{display:flex;align-items:center;gap:9px;margin-bottom:.55rem}
+.aicon{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.iok{background:var(--green-dim)}.iwarn{background:var(--amber-dim)}.ialert{background:var(--red-dim)}
+.atitle{font-size:13px;font-weight:700}.asub{font-size:11px;color:var(--text-sec)}
+.sugg-list{display:flex;flex-direction:column;gap:5px}
+.sugg-item{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;background:var(--surface2);border-radius:var(--rs);padding:8px 10px}
+.sugg-text{font-size:12px;color:var(--text);line-height:1.4}.sugg-sub{font-size:10px;color:var(--text-sec);margin-top:1px}
+.sugg-actions{display:flex;gap:5px;flex-shrink:0}
+.apply-btn{background:var(--lime);color:#000;border:none;font-size:10px;font-weight:700;font-family:inherit;letter-spacing:.04em;text-transform:uppercase;padding:5px 10px;border-radius:var(--rx);cursor:pointer;white-space:nowrap;transition:opacity .15s}
+.apply-btn:hover{opacity:.85}
+.ignore-btn{background:var(--surface3);color:var(--text-sec);border:.5px solid var(--border);font-size:10px;font-weight:600;font-family:inherit;padding:5px 10px;border-radius:var(--rx);cursor:pointer;white-space:nowrap}
+.ignore-btn:hover{color:var(--text)}
+
+/* ── New week btn ── */
+.nw-row{display:flex;justify-content:flex-end;margin-bottom:1.1rem}
+.nw-btn{display:flex;align-items:center;gap:7px;background:var(--lime);color:#000;border:none;font-size:12px;font-weight:700;font-family:inherit;padding:9px 16px;border-radius:var(--rs);cursor:pointer;transition:opacity .15s}
+.nw-btn:hover{opacity:.88}
+
+/* ── Overlays & modals ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:center;justify-content:center;padding:1rem}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border:.5px solid var(--border-med);border-radius:var(--r);padding:1.35rem;width:100%;max-width:520px;max-height:92vh;overflow-y:auto}
+.modal-title{font-size:18px;font-weight:900;letter-spacing:-.01em;margin-bottom:.2rem}
+.modal-sub{font-size:12px;color:var(--text-sec);margin-bottom:1rem}
+.flabel{display:block;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-sec);margin-bottom:5px}
+.finput,.fselect{width:100%;background:var(--surface2);border:.5px solid var(--border-med);border-radius:var(--rs);color:var(--text);font-size:13px;font-family:inherit;padding:9px 11px;outline:none;transition:border-color .15s;appearance:none}
+.finput:focus,.fselect:focus{border-color:var(--lime)}
+.fselect option{background:var(--surface2)}
+.fgroup{margin-bottom:.8rem}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+/* ── Day plan rows ── */
+.dp-section{border-top:.5px solid var(--border);padding-top:.85rem;margin-top:.4rem}
+.dp-section-title{font-size:10px;font-weight:700;color:var(--text-sec);margin-bottom:.55rem;letter-spacing:.05em;text-transform:uppercase}
+.dp-day{background:var(--surface2);border-radius:var(--rs);padding:9px 10px;margin-bottom:6px}
+.dp-day-name{font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px}
+.dp-slot{display:grid;grid-template-columns:52px 1fr 72px;gap:6px;align-items:center;margin-bottom:5px}
+.dp-slot:last-of-type{margin-bottom:0}
+.dp-slot-label{font-size:10px;color:var(--text-faint);font-weight:600}
+.dp-pts{font-size:10px;color:var(--lime);font-weight:700;text-align:right}
+.dp-day-total{display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding-top:6px;border-top:.5px solid var(--border)}
+.dp-day-total-label{font-size:10px;color:var(--text-faint)}
+.dp-day-total-val{font-size:11px;font-weight:700}
+.modal-total-row{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:var(--rs);padding:8px 12px;margin-bottom:.8rem}
+.modal-total-label{font-size:11px;color:var(--text-sec)}
+
+/* ── Modal actions ── */
+.mactions{display:flex;gap:7px;margin-top:1rem;padding-top:.85rem;border-top:.5px solid var(--border)}
+.btn-p{flex:1;background:var(--lime);color:#000;border:none;font-size:13px;font-weight:700;font-family:inherit;padding:10px;border-radius:var(--rs);cursor:pointer;transition:opacity .15s}
+.btn-p:hover{opacity:.88}
+.btn-s{background:var(--surface2);color:var(--text-sec);border:.5px solid var(--border-med);font-size:12px;font-weight:600;font-family:inherit;padding:10px 16px;border-radius:var(--rs);cursor:pointer;transition:all .15s}
+.btn-s:hover{color:var(--text)}
+
+/* ── Check-in metric rows ── */
+.ci-metric{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:.5px solid var(--border);gap:12px}
+.ci-metric:last-child{border-bottom:none}
+.ci-label{font-size:13px;color:var(--text)}.ci-hint{font-size:10px;color:var(--text-faint);margin-top:1px}
+/* Spinner with inline input */
+.spinner{display:flex;align-items:center;gap:5px}
+.spin-btn{width:28px;height:28px;background:var(--surface2);border:.5px solid var(--border-med);color:var(--text);border-radius:var(--rx);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;flex-shrink:0;transition:background .1s}
+.spin-btn:hover{background:var(--surface3)}
+.spin-input{width:58px;background:var(--surface2);border:.5px solid var(--border-med);border-radius:var(--rx);color:var(--lime);font-size:15px;font-weight:700;font-family:inherit;text-align:center;padding:4px 6px;outline:none}
+.spin-input:focus{border-color:var(--lime)}
+.spin-unit{font-size:10px;color:var(--text-faint);white-space:nowrap}
+/* feeling & ms buttons */
+.fbtns{display:flex;gap:5px}
+.fbtn{flex:1;background:var(--surface2);border:.5px solid var(--border);color:var(--text-sec);font-size:11px;font-weight:600;font-family:inherit;padding:7px 4px;border-radius:var(--rx);cursor:pointer;transition:all .15s;text-align:center}
+.fbtn.sg{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+.fbtn.sw{background:var(--amber-dim);border-color:var(--amber);color:var(--amber)}
+.fbtn.sb{background:var(--red-dim);border-color:var(--red);color:var(--red)}
+
+/* ── Rules ── */
+.rules-wrap{max-width:660px}
+.rb{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:.85rem}
+.rb-head{display:flex;align-items:center;gap:11px;padding:.85rem 1.1rem;border-bottom:.5px solid var(--border)}
+.rn{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.rb-title{font-size:13px;font-weight:700}.rb-when{font-size:10px;color:var(--text-faint);margin-top:1px}
+.rb-body{padding:.85rem 1.1rem}
+.rl{font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);margin:.65rem 0 .3rem}
+.rl:first-child{margin-top:0}
+.lgr{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:.6rem}
+.li{background:var(--surface2);border-radius:var(--rx);padding:6px 9px;display:flex;justify-content:space-between;align-items:center}
+.ln{font-size:11px;color:var(--text-sec)}.lp{font-size:11px;font-weight:700;color:var(--lime)}
+.tr{display:flex;align-items:flex-start;gap:8px;padding:7px 9px;border-radius:var(--rx);font-size:11px;line-height:1.5;margin-bottom:4px;border-left:2px solid}
+.tok{background:var(--green-dim);border-color:var(--green);color:#88ffcc}
+.twarn{background:var(--amber-dim);border-color:var(--amber);color:#ffcc66}
+.tstop{background:var(--red-dim);border-color:var(--red);color:#ff9999}
+.hlim{background:var(--red-dim);border:.5px solid rgba(255,68,68,.22);border-radius:var(--rx);padding:8px 10px;font-size:11px;color:#ff9999;margin-top:4px;line-height:1.5}
+
+/* ── Config ── */
+.cfg-section{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);padding:1.1rem;margin-bottom:.85rem}
+.cfg-title{font-size:13px;font-weight:700;margin-bottom:.6rem}
+.cfg-hint{font-size:12px;color:var(--text-sec);line-height:1.55;margin-bottom:.6rem}
+.cfg-steps{list-style:none;counter-reset:s}
+.cfg-steps li{counter-increment:s;display:flex;gap:9px;font-size:12px;color:var(--text-sec);padding:4px 0;line-height:1.5}
+.cfg-steps li::before{content:counter(s);width:17px;height:17px;background:var(--surface3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--lime);flex-shrink:0;margin-top:2px}
+.url-row{display:flex;gap:6px;margin-top:7px}
+.save-cfg{background:var(--lime);color:#000;border:none;font-size:11px;font-weight:700;font-family:inherit;padding:8px 12px;border-radius:var(--rs);cursor:pointer;white-space:nowrap}
+
+/* ── Confirm ── */
+.cbox{background:var(--surface2);border:.5px solid var(--border-med);border-radius:var(--r);padding:1.15rem;max-width:360px;width:100%}
+.ctitle{font-size:15px;font-weight:900;margin-bottom:.4rem}
+.ctext{font-size:12px;color:var(--text-sec);margin-bottom:1rem;line-height:1.5}
+.cactions{display:flex;gap:7px}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%) translateY(16px);background:var(--surface2);border:.5px solid var(--border-med);color:var(--text);font-size:12px;font-weight:600;padding:9px 16px;border-radius:99px;opacity:0;transition:all .25s;z-index:999;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:720px){.week-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:480px){.week-grid{grid-template-columns:repeat(2,1fr)}.main{padding:1rem}header{padding:.7rem 1rem}}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--surface3)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Trener<span> / Galloway</span></div>
+  <nav>
+    <button class="nav-btn active" onclick="showView('week',this)">Tydzień</button>
+    <button class="nav-btn" onclick="showView('rules',this)">Reguły</button>
+    <button class="nav-btn" onclick="showView('config',this)">Ustawienia</button>
+  </nav>
+</header>
+
+<div class="main">
+
+<!-- ══ WEEK VIEW ══ -->
+<div class="view active" id="view-week">
+
+  <!-- Dashboard gauge -->
+  <div class="dashboard">
+    <div class="dash-main">
+      <div class="dash-pts" id="dash-pts" style="color:var(--green)">0</div>
+      <div class="dash-label">pkt / tydzień</div>
+    </div>
+    <div class="gauge-wrap">
+      <div class="gauge-track">
+        <div class="gauge-fill" id="gauge-fill" style="width:0%;background:var(--green)"></div>
+      </div>
+      <div class="gauge-zones">
+        <div class="gz" style="flex:7;background:var(--green);opacity:.35"></div>
+        <div class="gz" style="flex:2;background:var(--amber);opacity:.45"></div>
+        <div class="gz" style="flex:3;background:var(--red);opacity:.45"></div>
+      </div>
+      <div class="gauge-labels">
+        <span>0</span><span>7</span><span>9</span><span>12+</span>
+      </div>
+      <div class="gauge-legend">
+        <div class="gl-item"><div class="gl-dot" style="background:var(--green)"></div><span>≤7 optymalne</span></div>
+        <div class="gl-item"><div class="gl-dot" style="background:var(--amber)"></div><span>8–9 granica</span></div>
+        <div class="gl-item"><div class="gl-dot" style="background:var(--red)"></div><span>≥10 za dużo</span></div>
+      </div>
+    </div>
+    <div class="dash-meta" id="dash-meta"></div>
+  </div>
+
+  <div class="week-header">
+    <div class="week-title" id="week-label">Tydzień — wprowadź plan</div>
+    <div style="font-size:11px;color:var(--text-faint)">Kliknij w dzień aby edytować</div>
+  </div>
+
+  <div class="week-grid" id="week-grid"></div>
+
+  <div class="nw-row">
+    <button class="nw-btn" onclick="confirmAction('Rozpocząć nowy tydzień? Poprzedni plan zostanie zarchiwizowany.',openNewWeek,true)">+ Nowy tydzień</button>
+  </div>
+</div>
+
+<!-- ══ RULES VIEW ══ -->
+<div class="view rules-wrap" id="view-rules">
+  <div style="margin-bottom:1rem">
+    <div style="font-size:21px;font-weight:900;letter-spacing:-.02em;margin-bottom:3px">Reguły algorytmu</div>
+    <div style="font-size:12px;color:var(--text-sec)">Na tych zasadach działają wszystkie rekomendacje. Twoje dane, Twoje decyzje.</div>
+  </div>
+  <div class="rb">
+    <div class="rb-head"><div class="rn" style="background:var(--purple-dim);color:var(--purple)">1</div><div><div class="rb-title">Suma obciążenia tygodniowego</div><div class="rb-when">Ocena na żywo przy planowaniu + każda zmiana</div></div></div>
+    <div class="rb-body">
+      <div class="rl">Wagi treningów</div>
+      <div class="lgr">
+        <div class="li"><span class="ln">Długie wybieganie</span><span class="lp">3 pkt</span></div>
+        <div class="li"><span class="ln">Serie 800m (4–8)</span><span class="lp">2 pkt</span></div>
+        <div class="li"><span class="ln">Serie 800m (9+)</span><span class="lp">3 pkt</span></div>
+        <div class="li"><span class="ln">Podbiegi</span><span class="lp">2 pkt</span></div>
+        <div class="li"><span class="ln">FBW pełny</span><span class="lp">2 pkt</span></div>
+        <div class="li"><span class="ln">FBW lekki</span><span class="lp">1 pkt</span></div>
+      </div>
+      <div class="rl">Progi tygodniowe</div>
+      <div class="tr tok"><span>✓</span><span>≤ 7 pkt — optymalnie</span></div>
+      <div class="tr twarn"><span>⚠</span><span>8–9 pkt — zamień FBW pełny na lekki lub odpuść siłowy</span></div>
+      <div class="tr tstop"><span>✕</span><span>≥ 10 pkt — skróć serie 800m do maks. 8 powt. i zredukuj FBW</span></div>
+      <div class="rl">Limity dzienne (2 treningi w jednym dniu)</div>
+      <div class="tr twarn"><span>⚠</span><span>Suma dnia ≥ 4 pkt → FBW musi być lekki</span></div>
+      <div class="tr tstop"><span>✕</span><span>Suma dnia ≥ 5 pkt → przesuń FBW na inny dzień</span></div>
+    </div>
+  </div>
+  <div class="rb">
+    <div class="rb-head"><div class="rn" style="background:var(--green-dim);color:var(--green)">2</div><div><div class="rb-title">Reguła długiego wybiegania</div><div class="rb-when">HR jako jedyne kryterium</div></div></div>
+    <div class="rb-body">
+      <div class="tr tok"><span>♥</span><span>HR 128–142 bpm przez cały bieg (strefa 2). Wyżej → zwalniaj lub marsz.</span></div>
+      <div class="tr twarn"><span>☀</span><span>Słońce + powyżej 23°C → cel 120–134 bpm.</span></div>
+      <div class="tr tstop"><span>!</span><span>HR powyżej 150+ mimo zwolnienia → skróć o 30%. Sygnał niedoboru regeneracji.</span></div>
+    </div>
+  </div>
+  <div class="rb">
+    <div class="rb-head"><div class="rn" style="background:var(--amber-dim);color:var(--amber)">3</div><div><div class="rb-title">Reguła serii 800m</div><div class="rb-when">Sprawdzaj przed i w trakcie każdej serii</div></div></div>
+    <div class="rb-body">
+      <div class="rl">Przed serią</div>
+      <div class="tr twarn"><span>⚡</span><span>Siłowy lub podbiegi w tym tygodniu → odejmij 2 powt.</span></div>
+      <div class="tr twarn"><span>📉</span><span>HRV poniżej normy przez 2+ dni → odejmij 2 powt.</span></div>
+      <div class="tr tstop"><span>🌙</span><span>Słaby sen ≤2/5 przez 2 noce → maks. 6 powt.</span></div>
+      <div class="rl">W trakcie</div>
+      <div class="tr twarn"><span>↑</span><span>HR szczytowe rośnie o więcej niż 4 bpm między kolejnymi 800m → stop.</span></div>
+      <div class="tr twarn"><span>↓</span><span>Tempo spada o więcej niż 10 sek/km → stop.</span></div>
+      <div class="tr tok"><span>✓</span><span>±3 sek/km + stabilne HR → seria poprawna. +1 powt. następnym razem.</span></div>
+      <div class="hlim"><strong>Limit bezwzględny:</strong> maks. 10 powt. przy długim biegu powyżej 14 km w tym tygodniu.</div>
+    </div>
+  </div>
+  <div class="rb">
+    <div class="rb-head"><div class="rn" style="background:var(--red-dim);color:var(--red)">4</div><div><div class="rb-title">Check-in — parametry gotowości</div><div class="rb-when">Rano przed każdym treningiem</div></div></div>
+    <div class="rb-body">
+      <div class="tr tok"><span>📊</span><span><strong>HRV</strong> — Garmin rano przed wstaniem. Vs. Twój baseline.</span></div>
+      <div class="tr tok"><span>❤</span><span><strong>HR spoczynkowe</strong> — Vs. baseline. Podwyższone o 5+ bpm = sygnał zmęczenia.</span></div>
+      <div class="tr tok"><span>😴</span><span><strong>Sen</strong> — godziny + punkty Garmin. Vs. Twoja typowa norma.</span></div>
+      <div class="tr tok"><span>💪</span><span><strong>Mięśnie</strong> — świeże / normalne / ciężkie. Ważne przy DOMS.</span></div>
+      <div class="tr tok"><span>🧠</span><span><strong>Gotowość ogólna</strong> — skala 1–5. Trzy złe parametry = algorytm sugeruje odpuszczenie.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CONFIG VIEW ══ -->
+<div class="view" id="view-config">
+  <div style="margin-bottom:1rem">
+    <div style="font-size:21px;font-weight:900;letter-spacing:-.02em;margin-bottom:3px">Ustawienia</div>
+    <div style="font-size:12px;color:var(--text-sec)">Twój osobisty baseline. Algorytm mierzy odchylenia od Twoich norm, nie populacyjnych średnich.</div>
+  </div>
+  <div class="cfg-section">
+    <div class="cfg-title">Baseline — dane z Garmina</div>
+    <div class="cfg-hint">Wpisz swoje typowe wartości. Najlepsze źródło: Garmin Connect → Zdrowie → średnie z ostatnich 30–90 dni. Typowy sen = Twoja długoterminowa średnia z Garmin Body Battery / Sen.</div>
+    <div class="frow" style="margin-bottom:8px">
+      <div class="fgroup" style="margin-bottom:0"><label class="flabel">HRV dolna granica (ms)</label><input class="finput" id="cfg-hrv-low" type="number" value="60"></div>
+      <div class="fgroup" style="margin-bottom:0"><label class="flabel">HRV górna granica (ms)</label><input class="finput" id="cfg-hrv-high" type="number" value="85"></div>
+    </div>
+    <div class="frow" style="margin-bottom:8px">
+      <div class="fgroup" style="margin-bottom:0"><label class="flabel">HR spoczynkowe baseline (bpm)</label><input class="finput" id="cfg-rhr" type="number" value="50"></div>
+      <div class="fgroup" style="margin-bottom:0"><label class="flabel">HRmax (bpm)</label><input class="finput" id="cfg-hrmax" type="number" value="183"></div>
+    </div>
+    <div class="frow" style="margin-bottom:8px">
+      <div class="fgroup" style="margin-bottom:0"><label class="flabel">Typowy sen — godziny (średnia)</label><input class="finput" id="cfg-sleep-h" type="number" value="7" step="0.5"></div>
+      <div class="fgroup" style="margin-bottom:0"><label class="flabel">Typowy sen — punkty Garmin</label><input class="finput" id="cfg-sleep-pts" type="number" value="75"></div>
+    </div>
+    <button class="btn-p" onclick="saveParams()" style="max-width:180px;margin-top:4px">Zapisz baseline</button>
+  </div>
+  <div class="cfg-section">
+    <div class="cfg-title">Google Sheets — synchronizacja</div>
+    <div class="cfg-hint">Dane zapisują się lokalnie automatycznie. Sheets to kopia w chmurze — opcjonalna, ale pozwala otworzyć aplikację z dowolnego urządzenia.</div>
+    <ol class="cfg-steps">
+      <li>Otwórz <strong style="color:var(--lime)">script.google.com</strong> → Nowy projekt</li>
+      <li>Wklej skrypt (przycisk poniżej) → Ctrl+S</li>
+      <li>"Wdróż" → "Nowe wdrożenie" → Typ: Aplikacja internetowa</li>
+      <li>Wykonaj jako: <strong>Ja</strong> · Dostęp: <strong>Wszyscy</strong> → Wdróż → Autoryzuj</li>
+      <li>Skopiuj URL i wklej poniżej → Zapisz</li>
+    </ol>
+    <button onclick="copyScript()" style="background:var(--surface2);border:.5px solid var(--border-med);color:var(--lime);font-size:11px;font-weight:700;font-family:inherit;padding:7px 12px;border-radius:var(--rs);cursor:pointer;margin-top:9px;margin-bottom:4px">Kopiuj skrypt Apps Script</button>
+    <label class="flabel" style="margin-top:8px">URL wdrożenia</label>
+    <div class="url-row">
+      <input class="finput" id="sheets-url" type="url" placeholder="https://script.google.com/macros/s/..." style="font-size:12px">
+      <button class="save-cfg" onclick="saveConfig()">Zapisz</button>
+    </div>
+    <div style="font-size:10px;color:var(--text-faint);margin-top:6px">Na tym samym komputerze URL jest pamiętany automatycznie po pierwszym wpisaniu.</div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- ══ MODAL: New Week ══ -->
+<div class="overlay" id="modal-week">
+  <div class="modal">
+    <div class="modal-title">Nowy tydzień</div>
+    <div class="modal-sub">Każdy dzień może mieć 2 treningi. Punkty liczą się na żywo.</div>
+    <div class="modal-total-row">
+      <span class="modal-total-label">Suma tygodnia</span>
+      <span id="modal-total" style="font-size:15px;font-weight:900;color:var(--green)">0 pkt</span>
+    </div>
+    <div class="dp-section">
+      <div class="dp-section-title">Plan na każdy dzień</div>
+      <div id="dp-rows"></div>
+    </div>
+    <div id="week-modal-alerts" style="display:none;margin-top:.75rem"></div>
+    <div class="mactions">
+      <button class="btn-s" onclick="closeModal('modal-week')">Anuluj</button>
+      <button class="btn-p" id="week-plan-btn" onclick="analyzeWeekModal()">Sprawdź plan →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: Edit Day ══ -->
+<div class="overlay" id="modal-editday">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-title" id="editday-title">Edytuj dzień</div>
+    <div class="modal-sub" id="editday-sub"></div>
+    <div class="fgroup">
+      <label class="flabel">Rano</label>
+      <select class="fselect" id="ed-am-type" onchange="updateEdDetail('am')"></select>
+    </div>
+    <div id="ed-am-det" style="margin-bottom:.8rem"></div>
+    <div class="fgroup">
+      <label class="flabel">Wieczór</label>
+      <select class="fselect" id="ed-pm-type" onchange="updateEdDetail('pm')"></select>
+    </div>
+    <div id="ed-pm-det"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.9rem;padding-top:.8rem;border-top:.5px solid var(--border)">
+      <span style="font-size:11px;color:var(--text-sec)">Suma dnia: <span id="ed-day-total" style="font-weight:700;color:var(--lime)">0 pkt</span></span>
+    </div>
+    <div class="mactions">
+      <button class="btn-s" onclick="closeModal('modal-editday')">Anuluj</button>
+      <button class="btn-p" onclick="submitEditDay()">Zapisz dzień →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: Check-in ══ -->
+<div class="overlay" id="modal-checkin">
+  <div class="modal">
+    <div class="modal-title" id="ci-title">Check-in</div>
+    <div class="modal-sub" id="ci-sub">Ocena gotowości</div>
+    <div class="ci-metric">
+      <div><div class="ci-label">HRV tej nocy</div><div class="ci-hint">Garmin — przed wstaniem z łóżka</div></div>
+      <div class="spinner"><button class="spin-btn" onclick="adj('hrv',-1)">−</button><input class="spin-input" id="ci-hrv" type="number" value="65" onchange="ciSync('hrv')"><button class="spin-btn" onclick="adj('hrv',1)">+</button><span class="spin-unit">ms</span></div>
+    </div>
+    <div class="ci-metric">
+      <div><div class="ci-label">HR spoczynkowe</div><div class="ci-hint">Rano przed wstaniem</div></div>
+      <div class="spinner"><button class="spin-btn" onclick="adj('rhr',-1)">−</button><input class="spin-input" id="ci-rhr" type="number" value="50" onchange="ciSync('rhr')"><button class="spin-btn" onclick="adj('rhr',1)">+</button><span class="spin-unit">bpm</span></div>
+    </div>
+    <div class="ci-metric">
+      <div><div class="ci-label">Sen — godziny</div><div class="ci-hint">Ile godzin spałeś</div></div>
+      <div class="spinner"><button class="spin-btn" onclick="adj('sleeph',-0.5)">−</button><input class="spin-input" id="ci-sleeph" type="number" value="7" step="0.5" onchange="ciSync('sleeph')"><button class="spin-btn" onclick="adj('sleeph',0.5)">+</button><span class="spin-unit">h</span></div>
+    </div>
+    <div class="ci-metric">
+      <div><div class="ci-label">Sen — punkty Garmin</div><div class="ci-hint">Wynik z Garmin Connect</div></div>
+      <div class="spinner"><button class="spin-btn" onclick="adj('sleeppts',-1)">−</button><input class="spin-input" id="ci-sleeppts" type="number" value="75" onchange="ciSync('sleeppts')"><button class="spin-btn" onclick="adj('sleeppts',1)">+</button><span class="spin-unit">pkt</span></div>
+    </div>
+    <div class="ci-metric">
+      <div><div class="ci-label">Samopoczucie mięśniowe</div><div class="ci-hint">Nogi, pośladki — szczególnie po siłowym</div></div>
+      <div class="fbtns">
+        <button class="fbtn" id="ms-fresh" onclick="setMs('fresh')">Świeże</button>
+        <button class="fbtn" id="ms-norm" onclick="setMs('norm')">Normalne</button>
+        <button class="fbtn" id="ms-heavy" onclick="setMs('heavy')">Ciężkie</button>
+      </div>
+    </div>
+    <div class="ci-metric">
+      <div><div class="ci-label">Gotowość ogólna</div><div class="ci-hint">1 = bardzo słaba, 5 = doskonała</div></div>
+      <div class="fbtns">
+        <button class="fbtn" id="rdy-5" onclick="setRdy(5)">5</button>
+        <button class="fbtn" id="rdy-4" onclick="setRdy(4)">4</button>
+        <button class="fbtn" id="rdy-3" onclick="setRdy(3)">3</button>
+        <button class="fbtn" id="rdy-2" onclick="setRdy(2)">2</button>
+        <button class="fbtn" id="rdy-1" onclick="setRdy(1)">1</button>
+      </div>
+    </div>
+    <div id="ci-results" style="display:none;margin-top:.75rem"></div>
+    <div class="mactions">
+      <button class="btn-s" id="ci-cancel-btn" onclick="closeModal('modal-checkin')">Anuluj</button>
+      <button class="btn-p" id="ci-main-btn" onclick="submitCheckin()">Analizuj →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: Confirm ══ -->
+<div class="overlay" id="modal-confirm">
+  <div class="cbox">
+    <div class="ctitle" id="ctitle">Potwierdzenie</div>
+    <div class="ctext" id="ctext"></div>
+    <div class="cactions">
+      <button class="btn-s" onclick="closeModal('modal-confirm')" style="flex:1">Anuluj</button>
+      <button class="btn-p" id="cok">Potwierdź</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DAYS=['Pon','Wt','Śr','Czw','Pt','Sob','Nd'];
+const WT={
+  rest:     {label:'Wolne',           pts:0,badge:'b-rest'},
+  run_long: {label:'Długie wyb.',     pts:3,badge:'b-run'},
+  intervals:{label:'Serie 800m',      pts:0,badge:'b-interval'},
+  hills:    {label:'Podbiegi',        pts:2,badge:'b-hills'},
+  fbw_full: {label:'FBW pełny',       pts:2,badge:'b-strength'},
+  fbw_lite: {label:'FBW lekki',       pts:1,badge:'b-strength'},
+};
+function wpts(type,detail){if(type==='intervals'){const n=parseInt(detail)||4;return n>=9?3:2;}return WT[type]?.pts||0;}
+
+let S={
+  weekPlan:null,weekStart:null,sheetsUrl:'',
+  hrvLow:60,hrvHigh:85,rhrBase:50,hrmax:183,sleepH:7,sleepPts:75,
+  ci:{hrv:65,rhr:50,sleeph:7,sleeppts:75,ms:'norm',rdy:4,dayIdx:-1}
+};
+let editDayIdx=-1;
+
+function emptyPlan(){return DAYS.map(()=>({am:{type:'rest',detail:''},pm:{type:'rest',detail:''},checkinDone:false,status:'ok',amAdj:'',pmAdj:'',savedCi:null,pendingSuggs:false}));}
+
+function load(){
+  try{const s=localStorage.getItem('trener3');if(s)Object.assign(S,JSON.parse(s));}catch(e){}
+  if(!S.weekPlan||S.weekPlan.length!==7)S.weekPlan=emptyPlan();
+  document.getElementById('sheets-url').value=S.sheetsUrl||'';
+  document.getElementById('cfg-hrv-low').value=S.hrvLow;
+  document.getElementById('cfg-hrv-high').value=S.hrvHigh;
+  document.getElementById('cfg-rhr').value=S.rhrBase;
+  document.getElementById('cfg-hrmax').value=S.hrmax;
+  document.getElementById('cfg-sleep-h').value=S.sleepH;
+  document.getElementById('cfg-sleep-pts').value=S.sleepPts;
+}
+function save(){localStorage.setItem('trener3',JSON.stringify(S));syncSheets();}
+async function syncSheets(){if(!S.sheetsUrl)return;try{await fetch(S.sheetsUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'save',data:S})});}catch(e){}}
+async function loadSheets(){if(!S.sheetsUrl)return;try{const r=await fetch(S.sheetsUrl+'?action=load');const d=await r.json();if(d&&d.weekPlan){Object.assign(S,d);renderWeek();}}catch(e){}}
+
+// ── Algorithm — weekly plan analysis only ──
+function analyzeWeekPlan(planData){
+  // planData: array of 7 day objects (from modal inputs or S.weekPlan)
+  const suggs=[];let sev='ok';
+  const total=planData.reduce((s,d)=>s+wpts(d.am.type,d.am.detail)+wpts(d.pm.type,d.pm.detail),0);
+
+  if(total>=10){sev='alert';
+    planData.forEach((d,i)=>{
+      ['am','pm'].forEach(sl=>{
+        if(d[sl].type==='intervals'){const n=parseInt(d[sl].detail)||4;if(n>8)suggs.push({text:`${DAYS[i]} (${sl==='am'?'rano':'wieczór'}): Skróć serie do 8 powt.`,sub:`Suma tygodnia ${total} pkt — powyżej limitu.`,fn:()=>{d[sl].detail='8';}});}
+        if(d[sl].type==='fbw_full')suggs.push({text:`${DAYS[i]} (${sl==='am'?'rano':'wieczór'}): FBW pełny → lekki`,sub:`Redukcja o 1 pkt.`,fn:()=>{d[sl].type='fbw_lite';}});
+      });
+    });
+  }else if(total>=8){sev='warn';
+    planData.forEach((d,i)=>{
+      ['am','pm'].forEach(sl=>{if(d[sl].type==='fbw_full')suggs.push({text:`${DAYS[i]}: Rozważ FBW lekki zamiast pełnego`,sub:`Suma ${total} pkt — na granicy.`,fn:()=>{d[sl].type='fbw_lite';}});});
+    });
+  }
+
+  planData.forEach((d,i)=>{
+    const dl=wpts(d.am.type,d.am.detail)+wpts(d.pm.type,d.pm.detail);
+    if(dl>=5){if(sev==='ok')sev='warn';suggs.push({text:`${DAYS[i]}: Przesuń jeden trening — suma dnia ${dl} pkt`,sub:`Limit dzienny: max 4 pkt.`,fn:null});}
+    else if(dl>=4&&(d.am.type==='fbw_full'||d.pm.type==='fbw_full')){if(sev==='ok')sev='warn';
+      const sl=d.am.type==='fbw_full'?'am':'pm';
+      suggs.push({text:`${DAYS[i]}: FBW musi być lekki (suma dnia ${dl} pkt)`,sub:`Dwa treningi — FBW pełny przekracza limit dzienny.`,fn:()=>{d[sl].type='fbw_lite';}});
+    }
+  });
+
+  const hasLong=planData.some(d=>d.am.type==='run_long'||d.pm.type==='run_long');
+  planData.forEach((d,i)=>{
+    ['am','pm'].forEach(sl=>{
+      if(d[sl].type==='intervals'&&hasLong){const n=parseInt(d[sl].detail)||4;if(n>10){if(sev==='ok')sev='warn';suggs.push({text:`${DAYS[i]}: Serie maks. 10 powt. (długie wybieganie w tygodniu)`,sub:`Limit bezwzględny.`,fn:()=>{d[sl].detail='10';}});}}
+    });
+  });
+
+  return{sev,suggs,total};
+}
+
+// ── Algorithm — checkin analysis for single day only ──
+function analyzeCheckin(ci){
+  const {hrv,rhr,sleeph,sleeppts,ms,rdy,dayIdx}=ci;
+  const d=S.weekPlan[dayIdx];
+  let sev='ok';let bad=0;const suggs=[];
+
+  if(hrv<S.hrvLow){bad++;sev='alert';
+    ['am','pm'].forEach(sl=>{
+      if(d[sl].type==='intervals'){const n=parseInt(d[sl].detail)||4;const r=Math.max(2,n-2);suggs.push({text:`${sl==='am'?'Rano':'Wieczór'}: Serie → ${r} powt. (HRV ${hrv} ms)`,sub:`Twoja norma ≥${S.hrvLow} ms.`,fn:()=>{d[sl].detail=String(r);markCI(dayIdx,'warn');save();renderWeek();}});}
+      if(d[sl].type==='run_long')suggs.push({text:`${sl==='am'?'Rano':'Wieczór'}: Skróć długi bieg o 30%`,sub:`HRV ${hrv} ms poniżej normy.`,fn:()=>{d[sl+'Adj']='Skrócone -30% (HRV)';markCI(dayIdx,'warn');save();renderWeek();}});
+      if(d[sl].type==='fbw_full')suggs.push({text:`${sl==='am'?'Rano':'Wieczór'}: FBW → lekki (HRV ${hrv} ms)`,sub:`Przy niskim HRV regeneracja ważniejsza.`,fn:()=>{d[sl].type='fbw_lite';markCI(dayIdx,'warn');save();renderWeek();}});
+    });
+  }
+  if(rhr>S.rhrBase+5){bad++;if(sev==='ok')sev='warn';suggs.push({text:`HR spoczynkowe ${rhr} bpm (norma ${S.rhrBase}) — sygnał zmęczenia`,sub:`Rozważ zamianę na lżejszy trening.`,fn:null});}
+  if(sleeph<S.sleepH-1.5){bad++;if(sev==='ok')sev='warn';
+    ['am','pm'].forEach(sl=>{if(d[sl].type==='intervals'){const n=parseInt(d[sl].detail)||4;if(n>6)suggs.push({text:`${sl==='am'?'Rano':'Wieczór'}: Maks. 6 powt. (tylko ${sleeph}h snu)`,sub:`Niedobór snu.`,fn:()=>{d[sl].detail='6';markCI(dayIdx,'warn');save();renderWeek();}})}});
+  }
+  if(sleeppts<S.sleepPts-20){bad++;if(sev==='ok')sev='warn';}
+  if(ms==='heavy'){bad++;if(sev==='ok')sev='warn';
+    ['am','pm'].forEach(sl=>{
+      if(d[sl].type==='intervals')suggs.push({text:`${sl==='am'?'Rano':'Wieczór'}: Biegnij na HR, nie na tempo (DOMS)`,sub:`Ciężkie nogi — strefa HR ważniejsza niż tempo.`,fn:null});
+      if(d[sl].type==='fbw_full')suggs.push({text:`${sl==='am'?'Rano':'Wieczór'}: FBW → lekki (DOMS)`,sub:`Ciężkie mięśnie + pełny siłowy = ryzyko kontuzji.`,fn:()=>{d[sl].type='fbw_lite';markCI(dayIdx,'warn');save();renderWeek();}});
+    });
+  }
+  if(rdy<=2){bad++;sev='alert';
+    if(d.am.type!=='rest'||d.pm.type!=='rest')
+      suggs.push({text:`Gotowość ${rdy}/5 — rozważ odpuszczenie treningu`,sub:`${bad} negatywnych sygnałów. Odpoczynek dziś = lepszy wynik jutro.`,fn:()=>{d.am={type:'rest',detail:''};d.pm={type:'rest',detail:''};markCI(dayIdx,'warn');save();renderWeek();}});
+  }
+  return{sev,suggs,bad};
+}
+function markCI(idx,st){S.weekPlan[idx].checkinDone=true;S.weekPlan[idx].status=st;}
+// ── Render ──
+function totalLoad(){return S.weekPlan.reduce((s,d)=>s+wpts(d.am.type,d.am.detail)+wpts(d.pm.type,d.pm.detail),0);}
+function dayLoad(d){return wpts(d.am.type,d.am.detail)+wpts(d.pm.type,d.pm.detail);}
+
+function renderWeek(){
+  const grid=document.getElementById('week-grid');grid.innerHTML='';
+  const today=new Date();const todayDow=(today.getDay()+6)%7;
+  const total=totalLoad();
+
+  // Gauge
+  const MAX=12;const pct=Math.min(100,(total/MAX)*100);
+  const gf=document.getElementById('gauge-fill');
+  const col=total>=10?'var(--red)':total>=8?'var(--amber)':'var(--green)';
+  gf.style.width=pct+'%';gf.style.background=col;
+  const dp=document.getElementById('dash-pts');dp.textContent=total;dp.style.color=col;
+
+  // Week label
+  if(S.weekStart){const s=new Date(S.weekStart);const e=new Date(s);e.setDate(s.getDate()+6);
+    document.getElementById('week-label').textContent=`${s.getDate()}.${String(s.getMonth()+1).padStart(2,'0')} – ${e.getDate()}.${String(e.getMonth()+1).padStart(2,'0')}.${e.getFullYear()}`;}
+
+  // Dash meta
+  const runD=S.weekPlan.filter(d=>['run_long','intervals','hills'].some(t=>d.am.type===t||d.pm.type===t)).length;
+  const strD=S.weekPlan.filter(d=>d.am.type.startsWith('fbw')||d.pm.type.startsWith('fbw')).length;
+  const dblD=S.weekPlan.filter(d=>d.am.type!=='rest'&&d.pm.type!=='rest').length;
+  document.getElementById('dash-meta').innerHTML=
+    `<div class="dash-card"><div class="dash-card-val">${runD}</div><div class="dash-card-lbl">Dni biegowe</div></div>`+
+    `<div class="dash-card"><div class="dash-card-val">${strD}</div><div class="dash-card-lbl">Dni siłowe</div></div>`+
+    `<div class="dash-card"><div class="dash-card-val">${dblD}</div><div class="dash-card-lbl">Podwójne</div></div>`;
+
+  // Day cards
+  S.weekPlan.forEach((day,i)=>{
+    const isToday=i===todayDow;
+    const amR=day.am.type==='rest',pmR=day.pm.type==='rest',isRest=amR&&pmR;
+    const dl=dayLoad(day);
+    const card=document.createElement('div');
+    card.className='day-card'+(isToday?' today':'')+(isRest?' rest-day':'');
+    card.onclick=()=>openEditDay(i);
+
+    // Day pts badge
+    if(!isRest){
+      const pb=document.createElement('div');pb.className='day-pts-badge';
+      pb.textContent=dl+'p';
+      pb.style.background=dl>=5?'var(--red-dim)':dl>=4?'var(--amber-dim)':'var(--surface3)';
+      pb.style.color=dl>=5?'var(--red)':dl>=4?'var(--amber)':'var(--text-faint)';
+      card.appendChild(pb);
+    }
+    if(day.checkinDone){const dot=document.createElement('div');dot.className='sdot '+(day.status==='ok'?'dok':'dwarn');dot.style.right=(!isRest?'28px':'9px');card.appendChild(dot);}
+
+    const lbl=document.createElement('div');lbl.className='day-lbl';lbl.textContent=DAYS[i];card.appendChild(lbl);
+    const num=document.createElement('div');num.className='day-num';
+    if(S.weekStart){const d=new Date(S.weekStart);d.setDate(d.getDate()+i);num.textContent=d.getDate();}
+    else num.textContent=i+1;
+    card.appendChild(num);
+
+    if(!amR){card.appendChild(buildSlot(day.am,'rano',day.amAdj));}
+    if(!amR&&!pmR){const dv=document.createElement('div');dv.className='slot-divider';card.appendChild(dv);}
+    if(!pmR){card.appendChild(buildSlot(day.pm,'wieczór',day.pmAdj));}
+    if(isRest){const r=document.createElement('div');r.style.cssText='flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-faint)';r.textContent='Odpoczynek';card.appendChild(r);}
+
+    if(!isRest){
+      const btn=document.createElement('button');
+      let btnClass='checkin-btn';
+      let btnLabel='⚡ Sprawdź gotowość';
+      if(day.checkinDone&&day.status==='ok'){btnClass+=' done';btnLabel='✓ Gotowy';}
+      else if(day.pendingSuggs){btnClass+=' warned';btnLabel='⚠ Wymaga korekty';}
+      else if(day.checkinDone&&day.status==='warn'){btnClass+=' done';btnLabel='✓ Gotowy';}
+      btn.className=btnClass;
+      btn.innerHTML=btnLabel;
+      btn.onclick=(e)=>{e.stopPropagation();openCheckin(i);};
+      card.appendChild(btn);
+    }
+    const eh=document.createElement('div');eh.className='edit-hint';eh.textContent='kliknij aby edytować';card.appendChild(eh);
+    grid.appendChild(card);
+  });
+}
+
+function buildSlot(sl,tl,adj){
+  const s=document.createElement('div');s.className='slot';
+  const t=document.createElement('div');t.className='slot-time';t.textContent=tl;s.appendChild(t);
+  const wt=WT[sl.type]||WT.rest;
+  const b=document.createElement('div');b.className='wbadge '+wt.badge;b.textContent=wt.label;s.appendChild(b);
+  if(sl.detail){const d=document.createElement('div');d.className='slot-detail';
+    if(sl.type==='intervals')d.textContent=sl.detail+'× 800m';
+    else if(sl.type==='run_long')d.textContent=sl.detail+' km';
+    else if(sl.type==='hills')d.textContent=sl.detail+' powt.';
+    else d.textContent=sl.detail;
+    s.appendChild(d);}
+  if(adj){const a=document.createElement('div');a.className='slot-adjusted';a.textContent='→ '+adj;s.appendChild(a);}
+  return s;
+}
+
+function buildSuggsHtml(suggs,sev,total,containerId,applyFnName){
+  const ic={alert:'!',warn:'⚠',ok:'✓'};
+  const icl={alert:'ialert',warn:'iwarn',ok:'iok'};
+  const ttl={alert:'Plan wymaga korekty',warn:'Rekomendowane korekty',ok:'Plan optymalny'};
+  const sub={alert:`Suma ${total} pkt — powyżej limitu.`,warn:`Suma ${total} pkt — na granicy.`,ok:`Suma ${total} pkt — w normie.`};
+  let h=`<div class="alert-panel ${sev==='alert'?'aalert':sev==='warn'?'awarn':'aok'}" style="margin-bottom:0">`;
+  h+=`<div class="alert-head"><div class="aicon ${icl[sev]}">${ic[sev]}</div><div><div class="atitle">${ttl[sev]}</div><div class="asub">${sub[sev]}</div></div></div>`;
+  if(suggs.length>0){
+    h+='<div class="sugg-list">';
+    suggs.forEach((s,idx)=>{
+      h+=`<div class="sugg-item"><div><div class="sugg-text">${s.text}</div><div class="sugg-sub">${s.sub}</div></div><div class="sugg-actions">`;
+      if(s.fn)h+=`<button class="apply-btn" onclick="${applyFnName}(${idx})">Zastosuj</button>`;
+      h+=`<button class="ignore-btn" onclick="this.closest('.sugg-item').remove()">Ignoruj</button></div></div>`;
+    });
+    h+='</div>';
+  }
+  h+='</div>';
+  return h;
+}
+
+// ── Week plan modal logic ──
+let _weekDraft=null;
+function analyzeWeekModal(){
+  _weekDraft=readDpRows('dp-rows');
+  const{sev,suggs,total}=analyzeWeekPlan(_weekDraft);
+  const container=document.getElementById('week-modal-alerts');
+  const btn=document.getElementById('week-plan-btn');
+  if(suggs.length===0){
+    // No issues — save directly
+    S.weekPlan=_weekDraft;closeModal('modal-week');save();renderWeek();showToast('Plan tygodnia zapisany');return;
+  }
+  window._weekSuggs=suggs;window._weekDraftRef=_weekDraft;
+  container.style.display='block';
+  container.innerHTML=buildSuggsHtml(suggs,sev,total,'week-modal-alerts','applyWeekSugg');
+  btn.textContent='Zapisz mimo to →';
+  btn.onclick=submitWeekPlan;
+}
+function applyWeekSugg(idx){
+  const s=window._weekSuggs[idx];
+  if(s.fn){s.fn();} // mutates _weekDraftRef entries directly
+  // Refresh modal selects to reflect changes
+  DAYS.forEach((_,i)=>{
+    const d=window._weekDraftRef[i];
+    ['am','pm'].forEach(sl=>{
+      const sel=document.getElementById(`dp-rows-${sl}-type-${i}`);
+      if(sel&&d)sel.value=d[sl].type;
+    });
+  });
+  calcDpTotal('dp-rows','modal-total');
+  // Re-analyze
+  const{sev,suggs,total}=analyzeWeekPlan(window._weekDraftRef);
+  window._weekSuggs=suggs;
+  const container=document.getElementById('week-modal-alerts');
+  if(suggs.length===0){container.innerHTML=buildSuggsHtml([],'ok',total,'week-modal-alerts','applyWeekSugg');}
+  else container.innerHTML=buildSuggsHtml(suggs,sev,total,'week-modal-alerts','applyWeekSugg');
+}
+
+function submitWeekPlan(){
+  S.weekPlan=window._weekDraftRef||readDpRows('dp-rows');
+  // Reset week-plan-btn for next time
+  const btn=document.getElementById('week-plan-btn');
+  btn.textContent='Sprawdź plan →';btn.onclick=analyzeWeekModal;
+  document.getElementById('week-modal-alerts').style.display='none';
+  closeModal('modal-week');save();renderWeek();showToast('Plan tygodnia zapisany');
+}
+function openNewWeek(){
+  const today=new Date();const dow=today.getDay();
+  const diff=dow===1?0:dow===0?1:-(dow-1);
+  const mon=new Date(today);mon.setDate(today.getDate()+diff);
+  S.weekStart=mon.toISOString().split('T')[0];
+  S.weekPlan=emptyPlan();
+  _weekDraft=null;window._weekDraftRef=null;window._weekSuggs=[];
+  document.getElementById('week-modal-alerts').style.display='none';
+  const btn=document.getElementById('week-plan-btn');
+  btn.textContent='Sprawdź plan →';btn.onclick=analyzeWeekModal;
+  buildDpRows('dp-rows','modal-total',null);
+  document.getElementById('modal-week').classList.add('open');
+}
+
+function buildDpRows(containerId,totalId,existingPlan){
+  const rows=document.getElementById(containerId);rows.innerHTML='';
+  DAYS.forEach((day,i)=>{
+    const ex=existingPlan?existingPlan[i]:null;
+    const block=document.createElement('div');block.className='dp-day';
+    block.innerHTML=`<div class="dp-day-name">${day}</div><div>
+      <div class="dp-slot"><span class="dp-slot-label">Rano</span><select class="fselect" id="${containerId}-am-type-${i}" onchange="updDet('${containerId}',${i},'am','${totalId}')">${slotOpts(ex?.am?.type)}</select><div id="${containerId}-am-det-${i}"></div></div>
+      <div class="dp-slot" style="margin-top:5px"><span class="dp-slot-label">Wieczór</span><select class="fselect" id="${containerId}-pm-type-${i}" onchange="updDet('${containerId}',${i},'pm','${totalId}')">${slotOpts(ex?.pm?.type)}</select><div id="${containerId}-pm-det-${i}"></div></div>
+    </div><div class="dp-day-total"><span class="dp-day-total-label">Suma dnia</span><span class="dp-day-total-val" id="${containerId}-day-total-${i}">0 pkt</span></div>`;
+    rows.appendChild(block);
+    // Restore existing detail values after DOM insert
+    if(ex){
+      setTimeout(()=>{
+        ['am','pm'].forEach(sl=>{
+          const sel=document.getElementById(`${containerId}-${sl}-type-${i}`);
+          if(sel&&ex[sl]){sel.value=ex[sl].type;updDet(containerId,i,sl,totalId,ex[sl].detail);}
+        });
+        calcDpTotal(containerId,totalId);
+      },0);
+    }
+  });
+  calcDpTotal(containerId,totalId);
+}
+
+function slotOpts(selected='rest'){return Object.entries(WT).map(([k,v])=>`<option value="${k}"${k===selected?' selected':''}>${v.label}</option>`).join('');}
+
+function updDet(cid,i,sl,tid,defaultVal=''){
+  const type=document.getElementById(`${cid}-${sl}-type-${i}`).value;
+  const wrap=document.getElementById(`${cid}-${sl}-det-${i}`);
+  let inp='';
+  if(type==='intervals')inp=`<input class="finput" id="${cid}-${sl}-detail-${i}" type="number" value="${defaultVal||4}" min="2" max="16" style="font-size:12px;margin-top:4px" onchange="calcDpTotal('${cid}','${tid}')">`;
+  else if(type==='run_long')inp=`<input class="finput" id="${cid}-${sl}-detail-${i}" type="number" value="${defaultVal||10}" min="3" max="35" style="font-size:12px;margin-top:4px" onchange="calcDpTotal('${cid}','${tid}')">`;
+  else if(type==='hills')inp=`<input class="finput" id="${cid}-${sl}-detail-${i}" type="number" value="${defaultVal||6}" min="2" max="20" style="font-size:12px;margin-top:4px" onchange="calcDpTotal('${cid}','${tid}')">`;
+  wrap.innerHTML=inp;
+  calcDpTotal(cid,tid);
+}
+
+function calcDpTotal(cid,tid){
+  let total=0;
+  DAYS.forEach((_,i)=>{
+    const at=document.getElementById(`${cid}-am-type-${i}`)?.value||'rest';
+    const pt=document.getElementById(`${cid}-pm-type-${i}`)?.value||'rest';
+    const ad=document.getElementById(`${cid}-am-detail-${i}`)?.value||'4';
+    const pd=document.getElementById(`${cid}-pm-detail-${i}`)?.value||'4';
+    const dp=wpts(at,ad)+wpts(pt,pd);total+=dp;
+    const el=document.getElementById(`${cid}-day-total-${i}`);
+    if(el){el.textContent=dp+' pkt';el.style.color=dp>=5?'var(--red)':dp>=4?'var(--amber)':dp>0?'var(--lime)':'var(--text-faint)';}
+  });
+  const tel=document.getElementById(tid);
+  if(tel){tel.textContent=total+' pkt';tel.style.color=total>=10?'var(--red)':total>=8?'var(--amber)':'var(--green)';}
+}
+
+function readDpRows(cid){
+  return DAYS.map((_,i)=>({
+    am:{type:document.getElementById(`${cid}-am-type-${i}`).value,detail:document.getElementById(`${cid}-am-detail-${i}`)?.value||''},
+    pm:{type:document.getElementById(`${cid}-pm-type-${i}`).value,detail:document.getElementById(`${cid}-pm-detail-${i}`)?.value||''},
+    checkinDone:false,status:'ok',amAdj:'',pmAdj:''
+  }));
+}
+
+function submitWeekPlan(){
+  S.weekPlan=readDpRows('dp-rows');
+  closeModal('modal-week');save();renderWeek();showToast('Plan tygodnia zapisany');
+}
+
+// ── Edit Day ──
+function openEditDay(idx){
+  editDayIdx=idx;
+  document.getElementById('editday-title').textContent='Edytuj — '+DAYS[idx];
+  if(S.weekStart){const d=new Date(S.weekStart);d.setDate(d.getDate()+idx);document.getElementById('editday-sub').textContent=`${d.getDate()}.${String(d.getMonth()+1).padStart(2,'0')}`;}
+  else document.getElementById('editday-sub').textContent='';
+  // Populate selects
+  const day=S.weekPlan[idx];
+  ['am','pm'].forEach(sl=>{
+    const sel=document.getElementById(`ed-${sl}-type`);
+    sel.innerHTML=slotOpts(day[sl].type);
+    updateEdDetail(sl,day[sl].detail);
+  });
+  updateEdDayTotal();
+  document.getElementById('modal-editday').classList.add('open');
+}
+
+function updateEdDetail(sl,defaultVal=''){
+  const type=document.getElementById(`ed-${sl}-type`).value;
+  const wrap=document.getElementById(`ed-${sl}-det`);
+  let inp='';
+  const day=editDayIdx>=0?S.weekPlan[editDayIdx]:null;
+  const existing=defaultVal||(day?day[sl].detail:'');
+  if(type==='intervals')inp=`<input class="finput" id="ed-${sl}-detail" type="number" value="${existing||4}" min="2" max="16" onchange="updateEdDayTotal()">`;
+  else if(type==='run_long')inp=`<input class="finput" id="ed-${sl}-detail" type="number" value="${existing||10}" min="3" max="35" onchange="updateEdDayTotal()">`;
+  else if(type==='hills')inp=`<input class="finput" id="ed-${sl}-detail" type="number" value="${existing||6}" min="2" max="20" onchange="updateEdDayTotal()">`;
+  wrap.innerHTML=inp;
+  updateEdDayTotal();
+}
+
+function updateEdDayTotal(){
+  const at=document.getElementById('ed-am-type').value;
+  const pt=document.getElementById('ed-pm-type').value;
+  const ad=document.getElementById('ed-am-detail')?.value||'4';
+  const pd=document.getElementById('ed-pm-detail')?.value||'4';
+  const dp=wpts(at,ad)+wpts(pt,pd);
+  const el=document.getElementById('ed-day-total');
+  el.textContent=dp+' pkt';
+  el.style.color=dp>=5?'var(--red)':dp>=4?'var(--amber)':dp>0?'var(--lime)':'var(--text-faint)';
+}
+
+function submitEditDay(){
+  const at=document.getElementById('ed-am-type').value;
+  const pt=document.getElementById('ed-pm-type').value;
+  S.weekPlan[editDayIdx].am={type:at,detail:document.getElementById('ed-am-detail')?.value||''};
+  S.weekPlan[editDayIdx].pm={type:pt,detail:document.getElementById('ed-pm-detail')?.value||''};
+  S.weekPlan[editDayIdx].amAdj='';S.weekPlan[editDayIdx].pmAdj='';
+  closeModal('modal-editday');save();renderWeek();showToast('Dzień zaktualizowany');
+}
+
+// ── Check-in ──
+function openCheckin(idx){
+  const d=S.weekPlan[idx];
+  // Restore saved ci data if exists, else use defaults
+  if(d.savedCi){
+    S.ci=Object.assign({},d.savedCi,{dayIdx:idx});
+  } else {
+    S.ci={hrv:S.hrvLow+5,rhr:S.rhrBase,sleeph:S.sleepH,sleeppts:S.sleepPts,ms:'norm',rdy:4,dayIdx:idx};
+  }
+  document.getElementById('ci-title').textContent='Check-in — '+DAYS[idx];
+  const slots=[d.am,d.pm].filter(s=>s.type!=='rest').map(s=>(WT[s.type]?.label||'')+(s.detail?' '+s.detail:'')).join(' + ');
+  document.getElementById('ci-sub').textContent=slots||'Dzień wolny';
+  document.getElementById('ci-hrv').value=S.ci.hrv;
+  document.getElementById('ci-rhr').value=S.ci.rhr;
+  document.getElementById('ci-sleeph').value=S.ci.sleeph;
+  document.getElementById('ci-sleeppts').value=S.ci.sleeppts;
+  setMs(S.ci.ms||'norm');setRdy(S.ci.rdy||4);
+
+  // If there are pending suggs from previous open, show them directly
+  if(d.pendingSuggs&&d.savedCi){
+    const{sev,suggs}=analyzeCheckin(S.ci);
+    if(suggs.length>0){
+      window._ciSuggs=suggs;
+      const container=document.getElementById('ci-results');
+      container.style.display='block';
+      container.innerHTML=buildSuggsHtml(suggs,sev,totalLoad(),'ci-results','applyCiSugg');
+      document.getElementById('ci-cancel-btn').textContent='Zamknij';
+      document.getElementById('ci-cancel-btn').onclick=()=>{closeModal('modal-checkin');resetCheckinModal();};
+      document.getElementById('ci-main-btn').textContent='Zapisz i zamknij →';
+      document.getElementById('ci-main-btn').onclick=()=>{markCI(idx,'warn');save();renderWeek();closeModal('modal-checkin');resetCheckinModal();showToast('Check-in zapisany');};
+    }
+  }
+  document.getElementById('modal-checkin').classList.add('open');
+}
+
+function adj(field,delta){
+  const el=document.getElementById('ci-'+field);
+  let v=parseFloat(el.value)||0;
+  v=Math.round((v+delta)*10)/10;
+  if(field==='hrv')v=Math.max(20,Math.min(200,v));
+  if(field==='rhr')v=Math.max(30,Math.min(100,v));
+  if(field==='sleeph')v=Math.max(3,Math.min(12,v));
+  if(field==='sleeppts')v=Math.max(0,Math.min(100,v));
+  el.value=v;ciSync(field);
+}
+function ciSync(field){S.ci[field]=parseFloat(document.getElementById('ci-'+field).value)||0;}
+function setMs(v){S.ci.ms=v;['fresh','norm','heavy'].forEach(x=>{const b=document.getElementById('ms-'+x);b.className='fbtn'+(x===v?(v==='fresh'?' sg':v==='norm'?' sw':' sb'):'');});}
+function setRdy(v){S.ci.rdy=v;[1,2,3,4,5].forEach(x=>{const b=document.getElementById('rdy-'+x);b.className='fbtn'+(x===v?(v>=4?' sg':v===3?' sw':' sb'):'');});}
+
+function submitCheckin(){
+  ['hrv','rhr','sleeph','sleeppts'].forEach(f=>ciSync(f));
+  const dayIdx=S.ci.dayIdx;
+  const{sev,suggs}=analyzeCheckin(S.ci);
+
+  // Always persist the ci inputs to the day
+  S.weekPlan[dayIdx].savedCi={...S.ci};
+
+  if(suggs.length===0){
+    S.weekPlan[dayIdx].pendingSuggs=false;
+    markCI(dayIdx,'ok');save();renderWeek();
+    closeModal('modal-checkin');
+    showToast('Gotowość potwierdzona — plan bez zmian ✓');
+    return;
+  }
+
+  // Mark pending (closed without applying = wymaga korekty)
+  S.weekPlan[dayIdx].pendingSuggs=true;
+  save();
+
+  // Show results inside modal
+  window._ciSuggs=suggs;
+  const container=document.getElementById('ci-results');
+  container.style.display='block';
+  container.innerHTML=buildSuggsHtml(suggs,sev,totalLoad(),'ci-results','applyCiSugg');
+
+  // Swap buttons
+  document.getElementById('ci-cancel-btn').textContent='Zamknij bez zmian';
+  document.getElementById('ci-cancel-btn').onclick=()=>{renderWeek();closeModal('modal-checkin');resetCheckinModal();};
+  document.getElementById('ci-main-btn').textContent='Zastosuj wszystko i zamknij →';
+  document.getElementById('ci-main-btn').onclick=()=>{applyAllCiSuggs(dayIdx);};
+}
+
+function applyCiSugg(idx){
+  const s=window._ciSuggs[idx];
+  if(s.fn){s.fn();}
+  s._applied=true;
+  const items=document.querySelectorAll('#ci-results .sugg-item');
+  if(items[idx])items[idx].remove();
+  // Check if all remaining suggs are resolved
+  const remaining=document.querySelectorAll('#ci-results .sugg-item').length;
+  if(remaining===0){
+    const dayIdx=S.ci.dayIdx;
+    S.weekPlan[dayIdx].pendingSuggs=false;
+    markCI(dayIdx,'ok');
+    save();renderWeek();
+    closeModal('modal-checkin');resetCheckinModal();
+    showToast('Wszystkie korekty zastosowane — gotowy ✓');
+  }
+}
+
+function applyAllCiSuggs(dayIdx){
+  window._ciSuggs.forEach(s=>{if(s.fn&&!s._applied)s.fn();});
+  S.weekPlan[dayIdx].pendingSuggs=false;
+  markCI(dayIdx,'ok');
+  save();renderWeek();
+  closeModal('modal-checkin');resetCheckinModal();
+  showToast('Wszystkie korekty zastosowane — gotowy ✓');
+}
+
+function resetCheckinModal(){
+  document.getElementById('ci-results').style.display='none';
+  document.getElementById('ci-results').innerHTML='';
+  document.getElementById('ci-cancel-btn').textContent='Anuluj';
+  document.getElementById('ci-cancel-btn').onclick=()=>closeModal('modal-checkin');
+  document.getElementById('ci-main-btn').textContent='Analizuj →';
+  document.getElementById('ci-main-btn').onclick=submitCheckin;
+}
+
+// ── Config ──
+function saveParams(){
+  S.hrvLow=parseFloat(document.getElementById('cfg-hrv-low').value)||60;
+  S.hrvHigh=parseFloat(document.getElementById('cfg-hrv-high').value)||85;
+  S.rhrBase=parseFloat(document.getElementById('cfg-rhr').value)||50;
+  S.hrmax=parseFloat(document.getElementById('cfg-hrmax').value)||183;
+  S.sleepH=parseFloat(document.getElementById('cfg-sleep-h').value)||7;
+  S.sleepPts=parseFloat(document.getElementById('cfg-sleep-pts').value)||75;
+  save();showToast('Baseline zapisany');
+}
+function saveConfig(){S.sheetsUrl=document.getElementById('sheets-url').value.trim();save();showToast('URL zapisany — synchronizuję...');loadSheets();}
+function copyScript(){
+  const sc=`function doPost(e){var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('State')||SpreadsheetApp.getActiveSpreadsheet().insertSheet('State');var d=JSON.parse(e.postData.contents);if(d.action==='save'){sh.clearContents();sh.getRange(1,1).setValue(JSON.stringify(d.data));}return ContentService.createTextOutput('ok');}
+function doGet(e){var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('State');if(!sh)return ContentService.createTextOutput('{}').setMimeType(ContentService.MimeType.JSON);return ContentService.createTextOutput(sh.getRange(1,1).getValue()||'{}').setMimeType(ContentService.MimeType.JSON);}`;
+  navigator.clipboard.writeText(sc).then(()=>showToast('Skrypt skopiowany'));
+}
+
+// ── Helpers ──
+function showView(n,btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+n).classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function confirmAction(text,fn,destr=false){
+  document.getElementById('ctext').textContent=text;
+  document.getElementById('ctitle').textContent=destr?'⚠ Uwaga':'Zastosować zmianę?';
+  const btn=document.getElementById('cok');btn.textContent=destr?'Tak, kontynuuj':'Zastosuj';
+  btn.onclick=()=>{closeModal('modal-confirm');if(fn)fn();};
+  document.getElementById('modal-confirm').classList.add('open');
+}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o){o.classList.remove('open');if(o.id==='modal-checkin')resetCheckinModal();}}));
+
+load();renderWeek();if(S.sheetsUrl)loadSheets();
+</script>
+</body>
+</html>
